@@ -18,37 +18,64 @@ public class EntityBehavior : MonoBehaviour
 
     public void FixedUpdate()
     {
-        float targetX = 0;
-        float targetY = 0;
+        //float targetX = 0;
+        //float targetY = 0;
+
+        Vector3 target = new Vector3(0f,0f);
 
         // Food target update
         GameObject fd = ClosestFood();
         if (fd != null)
         {
-            targetX += foodGene * (fd.transform.position.x - transform.position.x);
-            targetY += foodGene * (fd.transform.position.y - transform.position.y);
+            //Modeling gravitational force
+            Vector3 grav = new Vector3();
+
+            grav.x += fd.transform.position.x - transform.position.x;
+            grav.y += fd.transform.position.y - transform.position.y;
+
+            grav.Normalize();
+
+            grav *= foodGene * 1.0f/Mathf.Pow(Vector3.Distance(new Vector3(fd.transform.position.x, fd.transform.position.y), new Vector3(transform.position.x, transform.position.y)), 2);
+            target += grav;
         }
 
         // Smaller Entity target update
         GameObject sm = ClosestSmaller();
         if (sm != null)
         {
-            targetX += smallerEntityGene * (sm.transform.position.x - transform.position.x);
-            targetY += smallerEntityGene * (sm.transform.position.y - transform.position.y);
+            //Modeling gravitational force
+            Vector3 grav = new Vector3();
+
+            grav.x += sm.transform.position.x - transform.position.x;
+            grav.y += sm.transform.position.y - transform.position.y;
+
+            grav.Normalize();
+
+            grav *= smallerEntityGene * 1.0f / Mathf.Pow(Vector3.Distance(new Vector3(sm.transform.position.x, sm.transform.position.y), new Vector3(transform.position.x, transform.position.y)), 2);
+            target += grav;
         }
 
-        // Larger Entity target update *Moves in opposite direction
+        // Larger Entity target update
         GameObject lg = ClosestLarger();
         if (lg != null)
         {
-            targetX -= largerEntityGene * (lg.transform.position.x - transform.position.x);
-            targetY -= largerEntityGene * (lg.transform.position.y - transform.position.y);
+            //Modeling gravitational force
+            Vector3 grav = new Vector3();
+
+            // Opposite since you want to run away from a larger cell
+            grav.x += transform.position.x - lg.transform.position.x;
+            grav.y += transform.position.y - lg.transform.position.y;
+
+            grav.Normalize();
+
+            grav *= largerEntityGene * 1.0f / Mathf.Pow(Vector3.Distance(new Vector3(lg.transform.position.x, lg.transform.position.y), new Vector3(transform.position.x, transform.position.y)), 2);
+            target += grav;
         }
 
         // Apply target position movement
-        Vector3 move = new Vector3(targetX, targetY);
-        move = move.normalized * speed;
-        transform.position += move;
+        // We normalize this because we want to always have a fast speed
+        target = target.normalized * speed;
+        transform.position += target;
 
         // Adjust Scaling
         transform.localScale = new Vector3(1 + (size - 5)/scaleFactor, 1 + (size - 5)/scaleFactor);
@@ -121,8 +148,8 @@ public class EntityBehavior : MonoBehaviour
         }
         return closest;
     }
-
-    public void OnTriggerEnter2D(Collider2D collision)
+    
+    public void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Food"))
         {

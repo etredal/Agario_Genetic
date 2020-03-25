@@ -5,14 +5,23 @@ using UnityEngine.SceneManagement;
 
 public class ControllerBehavior : MonoBehaviour
 {
-    public float gameSpeed = 1f;
-
     public GameObject food;
     public GameObject entity;
 
+    // Adjustable variables
+    public float gameSpeed = 1f;
+    public int generations = 4;
+
+    // Genetic Alg Constants
     private readonly static int MAX_ENTITIES = 20;
     private readonly static int MAX_FOOD = 200;
+    private readonly static int GENETIC_TOP_ENTITIES = 5; // How many entities left as winners
+
+    // Local use variables
     private EntityBehavior[] entities = new EntityBehavior[MAX_ENTITIES];
+    private int currentGen = 0;
+    private bool isGenRunning = false;
+    private float[][] crossbreedGenes = new float[GENETIC_TOP_ENTITIES][];
 
     // Creating one instance of this object
     void Awake()
@@ -27,12 +36,6 @@ public class ControllerBehavior : MonoBehaviour
         DontDestroyOnLoad(this.gameObject);
     }
 
-    private void Start()
-    {
-        // Start with spawning everyone in
-        CreateEntities(MAX_ENTITIES, true);
-    }
-
     private void FixedUpdate()
     {
         // The speed at which the game is played.  1f is realtime.
@@ -40,6 +43,48 @@ public class ControllerBehavior : MonoBehaviour
 
         // Each update add food if not full
         CreateFood();
+
+        // Collect data on surviving entities if the end condition has been met
+        GameObject[] survivingEntities = GameObject.FindGameObjectsWithTag("Entity");
+        if (survivingEntities.Length <= GENETIC_TOP_ENTITIES)
+        {
+            for (int i = 0; i < survivingEntities.Length; i++)
+            {
+                crossbreedGenes[i] = survivingEntities[i].GetComponent<EntityBehavior>().GetGenes();
+            }
+
+            // Last generation special case
+            // TODO
+            isGenRunning = false;
+        }
+
+        // Start a new generation if ended and still generations left
+        if (currentGen < generations && isGenRunning == false)
+        {
+            // Remove the winners of that round
+            foreach (GameObject e in survivingEntities)
+            {
+                if (e != null)
+                {
+                    Destroy(e);
+                }
+            }
+
+            // Start with spawning everyone in
+            CreateEntities(MAX_ENTITIES, true);
+
+            isGenRunning = true;
+            currentGen++;
+        }
+        else if (currentGen >= generations && isGenRunning == false) //This was the last generation
+        {
+            // Find the top winner
+            // TODO
+
+            // Report winner's genes
+            // TODO
+        }
+
     }
 
     private void CreateEntities(int cap, bool random)

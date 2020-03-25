@@ -22,6 +22,7 @@ public class EntityBehavior : MonoBehaviour
 
     public void FixedUpdate()
     {
+        // Decrease size
         loss++;
         if (loss > lossTime)
         {
@@ -29,11 +30,23 @@ public class EntityBehavior : MonoBehaviour
             size--;
         }
 
+        // Death Case 1
         if (size <= 0)
         {
             Destroy(gameObject);
         }
 
+        // Death Case 2: Too far off the map
+        // This is here because they might stray too
+        // far and they will die, it just needs to be
+        // done quicker since the genetic algorithm determines most fit
+        // to be the last X surviving
+        if (transform.position.x > 150 || transform.position.x < -150 || transform.position.y > 100 || transform.position.y < -100)
+        {
+            Destroy(gameObject);
+        }
+
+        // Pathfind code starts
         Vector3 target = new Vector3(0f,0f);
 
         // Food target update
@@ -217,5 +230,14 @@ public class EntityBehavior : MonoBehaviour
         foodGene = Random.Range(0f,1f);
         smallerEntityGene = Random.Range(0f,1f);
         largerEntityGene = Random.Range(0f,1f);
+    }
+
+    public float[] GetGenes()
+    {
+        float[] r = new float[3];
+        r[0] = foodGene;
+        r[1] = smallerEntityGene;
+        r[2] = largerEntityGene;
+        return r;
     }
 }

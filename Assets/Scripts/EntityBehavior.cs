@@ -15,11 +15,24 @@ public class EntityBehavior : MonoBehaviour
 
     private float speed = 0f;
     private float baseSpeed = 0.08f;
+    private float speedDecreaseFactor = 10000f; // Higher is slower
+
+    private int loss = 0;
+    private int lossTime = 600;
 
     public void FixedUpdate()
     {
-        //float targetX = 0;
-        //float targetY = 0;
+        loss++;
+        if (loss > lossTime)
+        {
+            loss = 0;
+            size--;
+        }
+
+        if (size <= 0)
+        {
+            Destroy(gameObject);
+        }
 
         Vector3 target = new Vector3(0f,0f);
 
@@ -81,7 +94,7 @@ public class EntityBehavior : MonoBehaviour
         transform.localScale = new Vector3(1 + (size - 5)/scaleFactor, 1 + (size - 5)/scaleFactor);
 
         // Adjust Speed
-        speed = baseSpeed - size / 800.0f;
+        speed = Mathf.Max(0.01f, baseSpeed - size / speedDecreaseFactor);
     }
 
     private void Start()
@@ -153,7 +166,11 @@ public class EntityBehavior : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Food"))
         {
-            size++;
+            if (collision.gameObject.GetComponent<FoodBehavior>().active == true)
+            {
+                size++; // Only get to increase size if it DID NOT just spawn into the game
+            }
+            
             Destroy(collision.gameObject);
         }
         else if (collision.gameObject.transform.parent.gameObject.CompareTag("Entity"))
@@ -170,7 +187,7 @@ public class EntityBehavior : MonoBehaviour
     {
         if (obj.CompareTag("Entity"))
         {
-            if (obj.GetComponent<EntityBehavior>().size < size - 20)
+            if (obj.GetComponent<EntityBehavior>().size < size - 10)
             {
                 return true;
             }
@@ -182,11 +199,23 @@ public class EntityBehavior : MonoBehaviour
     {
         if (obj.CompareTag("Entity"))
         {
-            if (obj.GetComponent<EntityBehavior>().size - 20 > size)
+            if (obj.GetComponent<EntityBehavior>().size - 10 > size)
             {
                 return true;
             }
         }
         return false;
+    }
+
+    public Vector2 GetCoordinates()
+    {
+        return new Vector2(transform.position.x, transform.position.y);
+    }
+
+    public void RandomGenes()
+    {
+        foodGene = Random.Range(0f,1f);
+        smallerEntityGene = Random.Range(0f,1f);
+        largerEntityGene = Random.Range(0f,1f);
     }
 }

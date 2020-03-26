@@ -232,12 +232,27 @@ public class EntityBehavior : MonoBehaviour
         largerEntityGene = Random.Range(0f,1f);
     }
 
-    public float[] GetGenes()
+    public float GetGene(int gene)
     {
-        float[] r = new float[3];
-        r[0] = foodGene;
-        r[1] = smallerEntityGene;
-        r[2] = largerEntityGene;
-        return r;
+        switch (gene)
+        {
+            case 0: return foodGene;
+            case 1: return smallerEntityGene;
+            case 2: return largerEntityGene;
+            default:
+                Debug.Log("No gene");
+                return 0f;
+        }
+    }
+
+    public void SetGene(int gene, float value)
+    {
+        switch(gene)
+        {
+            case 0: foodGene = value; break;
+            case 1: smallerEntityGene = value; break;
+            case 2: largerEntityGene = value; break;
+            default: Debug.Log("No gene"); break;
+        }
     }
 }

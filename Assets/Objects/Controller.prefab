@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 7430094367765880253}
   - component: {fileID: 8376887967462862130}
+  - component: {fileID: 478620430}
   m_Layer: 0
   m_Name: Controller
-  m_TagString: Untagged
+  m_TagString: GameController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -41,5 +42,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 640e7f7bc71c22548a4599b28f8a3514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  food: {fileID: 7621011875724903716, guid: 8e40effc2d285f74ebaf2825cea48b42, type: 3}
+  entity: {fileID: 5605054996033705605, guid: 303a7224836829548b0c61569c7d9ea0, type: 3}
+  gameSpeed: 20
+  generations: 4
+--- !u!114 &478620430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7430094367765880194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55f650244bc5ee546893348a13a56df2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

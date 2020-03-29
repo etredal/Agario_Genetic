@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ControllerBehavior : MonoBehaviour
 {
+    // Receiving from Unity
     public GameObject food;
     public GameObject entity;
+    public Text text;
 
     // Adjustable variables
     public float gameSpeed = 1f;
     public int generations = 4;
+    public float[] evalEntityGenes = new float[GENES];
+    public float score = 0;
 
     // Genetic Alg Constants
     private readonly static int GENES = 3;
@@ -19,35 +24,57 @@ public class ControllerBehavior : MonoBehaviour
     private readonly static int GENETIC_TOP_ENTITIES = 5; // How many entities left as winners
     private readonly static int CROSSOVER_CHANCE = 6; // (1 / CROSSOVER_CHANCE - 1) is the probability
     private readonly static float MUTATION_AMOUNT = 0.05f;
+    private readonly static int EVALUATION_ENTITIES = 10;
+    private readonly static int EVALUATIONS = 10;
+    private readonly static int DETERMINED_SEED = 9902;
 
     // Local use variables
     private EntityBehavior[] entities = new EntityBehavior[MAX_ENTITIES];
     private int currentGen = 0;
     private bool isGenRunning = false;
     private float[][] crossbreedGenes = new float[GENETIC_TOP_ENTITIES][];
+    private bool returningToMainMenu = false;
+    private bool randomSet = false;
+    private GameObject evalEntity = null;
 
-    // Creating one instance of this object SINGLETON
-    void Awake()
+    private void Awake()
     {
-        GameObject[] objs = GameObject.FindGameObjectsWithTag("GameController");
-
-        if (objs.Length > 1)
-        {
-            Destroy(this.gameObject);
-        }
-
         DontDestroyOnLoad(this.gameObject);
     }
 
     private void FixedUpdate()
     {
-        if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName("MainMenu"))
+        if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName("Start"))
         {
-            
+            if (returningToMainMenu == false)
+            {
+                returningToMainMenu = true;
+                SceneManager.LoadScene("MainMenu");
+            }
+        }
+        else if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName("MainMenu"))
+        {
+            Random.InitState(System.Environment.TickCount);
+            currentGen = 0;
+            if (text == null) text = GameObject.FindGameObjectWithTag("EvalText").GetComponent<Text>();
+            returningToMainMenu = false;
+            randomSet = false;
+            text.text = "Current Set Genes for Evaluation (Food, Smaller, Larger): " + evalEntityGenes[0] + " " + evalEntityGenes[1] + " " + evalEntityGenes[2] + "\n" + "Previous eval score: " + score;
         }
         else if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName("Generation"))
         {
             Generation();
+        }
+        else if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName("Evaluation"))
+        {
+            if (randomSet == false)
+            {
+                score = 0;
+                Random.InitState(DETERMINED_SEED);
+                randomSet = true;
+            }
+
+            Evaluation();
         }
     }
 
@@ -113,10 +140,92 @@ public class ControllerBehavior : MonoBehaviour
             DestroyEntities(survivingEntities);
 
             // Report winner's genes
-            Debug.Log(crossbreedGenes[0][0] + " " + crossbreedGenes[0][1] + " " + crossbreedGenes[0][2]);
+            evalEntityGenes[0] = crossbreedGenes[0][0];
+            evalEntityGenes[1] = crossbreedGenes[0][1];
+            evalEntityGenes[2] = crossbreedGenes[0][2];
 
             // Return to main menu
-            SceneManager.LoadScene("MainMenu");
+            if (returningToMainMenu == false)
+                SceneManager.LoadScene("MainMenu");
+
+            returningToMainMenu = true;
+        }
+    }
+
+    private void Evaluation()
+    {
+        // The speed at which the game is played.  1f is realtime.
+        Time.timeScale = gameSpeed;
+
+        // Each update add food if not full
+        CreateFood();
+
+        // Collect data on surviving entities if the end condition has been met
+        GameObject[] survivingEntities = GameObject.FindGameObjectsWithTag("Entity");
+        if (isGenRunning == true) // isGenRunning to make sure doesn't occur before first run
+        {
+            bool died = true;
+            for (int i = 0; i < survivingEntities.Length; i++)
+            {
+                if (survivingEntities[i] == evalEntity)
+                {
+                    died = false;
+                }
+            }
+            
+            // Last generation special case
+            if (currentGen < EVALUATIONS && died == true)
+            {
+                isGenRunning = false;
+            }
+            else
+            {
+                if (survivingEntities.Length <= 1 || died == true)
+                {
+                    isGenRunning = false;
+                }
+            }
+        }
+
+        // Start a new generation if ended and still generations left
+        if (currentGen < EVALUATIONS && isGenRunning == false)
+        {
+            // Add to score
+            if (currentGen != 0)
+                score += EVALUATION_ENTITIES - survivingEntities.Length;
+
+            // Remove the winners of that round
+            DestroyEntities(survivingEntities);
+
+            // Start with spawning everyone in
+            CreateEntities(EVALUATION_ENTITIES);
+
+            evalEntity = Instantiate(entity, new Vector3(0f, 0f), Quaternion.identity);
+            evalEntity.GetComponent<EntityBehavior>().SetGene(0, evalEntityGenes[0]);
+            evalEntity.GetComponent<EntityBehavior>().SetGene(1, evalEntityGenes[1]);
+            evalEntity.GetComponent<EntityBehavior>().SetGene(2, evalEntityGenes[2]);
+            evalEntity.GetComponent<EntityBehavior>().special = true;
+
+            // Control
+            isGenRunning = true;
+            currentGen++;
+        }
+        else if (currentGen >= EVALUATIONS && isGenRunning == false) //This was the last generation
+        {
+            // Remove the winners of that round
+            DestroyEntities(survivingEntities);
+            
+            // Make sure there's no aschrynous overlap
+            if (returningToMainMenu == false)
+            {
+                // Add to score
+                score += EVALUATION_ENTITIES - survivingEntities.Length;
+
+                // Return to main menu
+                SceneManager.LoadScene("MainMenu");
+            }
+
+            returningToMainMenu = true;
         }
     }
 

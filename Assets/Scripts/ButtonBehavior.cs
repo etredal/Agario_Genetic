@@ -10,4 +10,9 @@ public class ButtonBehavior : MonoBehaviour
     {
         SceneManager.LoadScene("Generation");
     }
+
+    public void ButtonTwoBehavior()
+    {
+        SceneManager.LoadScene("Evaluation");
+    }
 }

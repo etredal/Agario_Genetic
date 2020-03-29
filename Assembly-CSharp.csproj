@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\ControllerBehavior.cs" />
     <Compile Include="Assets\Scripts\EntityBehavior.cs" />
     <Compile Include="Assets\Scripts\FoodBehavior.cs" />
+    <Compile Include="Assets\Scripts\InputBehavior.cs" />
     <Compile Include="Assets\Scripts\PointBehavior.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/etred/Documents/CodeProjects/Agario_Genetic/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>

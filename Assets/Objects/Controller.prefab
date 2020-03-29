@@ -46,8 +46,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   food: {fileID: 7621011875724903716, guid: 8e40effc2d285f74ebaf2825cea48b42, type: 3}
   entity: {fileID: 5605054996033705605, guid: 303a7224836829548b0c61569c7d9ea0, type: 3}
-  gameSpeed: 20
+  text: {fileID: 0}
+  gameSpeed: 1
   generations: 4
+  evalEntityGenes:
+  - 0
+  - 0
+  - 0
 --- !u!114 &478620430
 MonoBehaviour:
   m_ObjectHideFlags: 0

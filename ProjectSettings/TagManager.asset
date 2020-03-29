@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Food
   - Entity
+  - EvalText
   layers:
   - Default
   - TransparentFX

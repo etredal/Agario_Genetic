@@ -13,6 +13,8 @@ public class EntityBehavior : MonoBehaviour
     public bool setRandomColor = true;
     public float scaleFactor = 10f;
 
+    public bool special = false;
+
     private float speed = 0f;
     private float baseSpeed = 0.08f;
     private float speedDecreaseFactor = 10000f; // Higher is slower
@@ -108,6 +110,9 @@ public class EntityBehavior : MonoBehaviour
 
         // Adjust Speed
         speed = Mathf.Max(0.01f, baseSpeed - size / speedDecreaseFactor);
+
+        // Special then switch colors for evaluation
+        if (special) GetComponent<SpriteRenderer>().color = UnityEngine.Random.ColorHSV();
     }
 
     private void Start()
